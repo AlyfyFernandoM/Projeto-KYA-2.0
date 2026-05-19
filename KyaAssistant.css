@@ -1,0 +1,147 @@
+.kya-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.kya-modal {
+  background-color: #FFFFFF;
+  width: 450px;
+  height: 600px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: #6B7280;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #EF4444;
+}
+
+.kya-header {
+  background: linear-gradient(135deg, #006400 0%, #004d00 100%);
+  padding: 40px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #FFFFFF;
+}
+
+.kya-avatar {
+  width: 72px;
+  height: 72px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  border: 2px solid #FFD700; /* Detalhe em Amarelo Favo */
+}
+
+.kya-header h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.kya-header p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.kya-chat-area {
+  flex: 1;
+  padding: 24px;
+  background-color: #F8F9FA;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  max-width: 85%;
+}
+
+.kya-message {
+  background-color: #E6F0E6;
+  color: #004d00;
+  border-bottom-left-radius: 4px;
+}
+
+.kya-input-area {
+  padding: 16px 24px;
+  background-color: #FFFFFF;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.kya-input-area input {
+  flex: 1;
+  border: none;
+  background-color: #F3F4F6;
+  padding: 12px 16px;
+  border-radius: 20px;
+  font-size: 15px;
+  outline: none;
+}
+
+.voice-btn {
+  background-color: #006400;
+  color: #FFFFFF;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 100, 0, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 100, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 100, 0, 0); }
+}
+
+.send-btn {
+  background: transparent;
+  border: none;
+  color: #006400;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
