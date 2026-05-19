@@ -6,6 +6,8 @@ import {
   FiHome, FiLogOut, FiMapPin, FiPackage
 } from 'react-icons/fi';
 import KyaAssistant from './KyaAssistant';
+import Products from './Products';
+import ShoppingCart from './ShoppingCart';
 
 export default function Home({ session }) {
   const [isKyaOpen, setIsKyaOpen] = useState(false);
@@ -18,6 +20,13 @@ export default function Home({ session }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const [selectedMarket, setSelectedMarket] = useState(null);
+  const [cartItems, setCartItems] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const [settingsData, setSettingsData] = useState({ nome: '', morada: '', preferencias_alimentares: '' });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
   useEffect(() => {
     async function loadData() {
       const [{ data: mData }, { data: pData }, { data: prData }] = await Promise.all([
@@ -28,10 +37,38 @@ export default function Home({ session }) {
       setMercados(mData || []);
       setPedidos(pData || []);
       setProfile(prData);
+      setSettingsData({
+        nome: prData?.nome || '',
+        morada: prData?.morada || '',
+        preferencias_alimentares: prData?.preferencias_alimentares || '',
+      });
       setLoading(false);
     }
     loadData();
   }, [session.user.id]);
+
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          nome: settingsData.nome,
+          morada: settingsData.morada,
+          preferencias_alimentares: settingsData.preferencias_alimentares,
+        })
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+      setProfile(settingsData);
+      setIsSettingsOpen(false);
+      alert('Perfil atualizado com sucesso!');
+    } catch (err) {
+      alert('Erro ao guardar: ' + err.message);
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   const filteredMarkets = mercados.filter(m => {
     const q = searchQuery.toLowerCase();
@@ -46,6 +83,45 @@ export default function Home({ session }) {
   };
 
   const displayName = profile?.nome || session.user.email?.split('@')[0] || 'Cliente';
+
+  const handleAddToCart = (product) => {
+    setCartItems(prev => {
+      const existing = prev.find(p => p.id === product.id);
+      if (existing) {
+        return prev.map(p =>
+          p.id === product.id
+            ? { ...p, quantidade: p.quantidade + product.quantidade }
+            : p
+        );
+      }
+      return [...prev, product];
+    });
+  };
+
+  const handleRemoveFromCart = (productId) => {
+    setCartItems(prev => prev.filter(p => p.id !== productId));
+  };
+
+  const handleUpdateQuantity = (productId, newQty) => {
+    if (newQty <= 0) {
+      handleRemoveFromCart(productId);
+    } else {
+      setCartItems(prev =>
+        prev.map(p => p.id === productId ? { ...p, quantidade: newQty } : p)
+      );
+    }
+  };
+
+  if (selectedMarket) {
+    return (
+      <Products
+        marketId={selectedMarket.id}
+        marketName={selectedMarket.nome}
+        onBack={() => setSelectedMarket(null)}
+        onAddToCart={handleAddToCart}
+      />
+    );
+  }
 
   return (
     <div className="app-container">
@@ -97,6 +173,10 @@ export default function Home({ session }) {
           </div>
 
           <div className="header-actions">
+            <button className="icon-btn" onClick={() => setIsCartOpen(true)} title="Carrinho">
+              <FiShoppingBag size={18} />
+              {cartItems.length > 0 && <span className="cart-count">{cartItems.length}</span>}
+            </button>
             <button className="icon-btn" onClick={() => setIsSettingsOpen(true)} title="Configurações">
               <FiSettings size={18} />
             </button>
@@ -148,7 +228,12 @@ export default function Home({ session }) {
                 ) : filteredMarkets.length > 0 ? (
                   <div className="markets-grid">
                     {filteredMarkets.map(market => (
-                      <div className="market-card" key={market.id}>
+                      <button
+                        className="market-card"
+                        key={market.id}
+                        onClick={() => setSelectedMarket(market)}
+                        style={{ cursor: 'pointer', textAlign: 'left', border: 'none', padding: 0, background: 'none' }}
+                      >
                         <div className="market-card-icon"><FiMapPin size={18} /></div>
                         <h4>{market.nome}</h4>
                         <p>{market.distancia || 'Distância não informada'}</p>
@@ -159,7 +244,7 @@ export default function Home({ session }) {
                             ))}
                           </div>
                         )}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 ) : (
@@ -265,25 +350,55 @@ export default function Home({ session }) {
             <h2>Configurações</h2>
             <div className="settings-section">
               <label>Nome</label>
-              <input type="text" defaultValue={profile?.nome || ''} readOnly />
+              <input
+                type="text"
+                value={settingsData.nome}
+                onChange={(e) => setSettingsData({ ...settingsData, nome: e.target.value })}
+              />
             </div>
             <div className="settings-section">
               <label>Email</label>
-              <input type="email" defaultValue={session.user.email} readOnly />
+              <input type="email" value={session.user.email} readOnly />
             </div>
             <div className="settings-section">
               <label>Morada</label>
-              <input type="text" defaultValue={profile?.morada || ''} readOnly />
+              <input
+                type="text"
+                value={settingsData.morada}
+                onChange={(e) => setSettingsData({ ...settingsData, morada: e.target.value })}
+              />
+            </div>
+            <div className="settings-section">
+              <label>Preferências Alimentares</label>
+              <input
+                type="text"
+                placeholder="ex: vegetariano, sem glúten..."
+                value={settingsData.preferencias_alimentares}
+                onChange={(e) => setSettingsData({ ...settingsData, preferencias_alimentares: e.target.value })}
+              />
             </div>
             <div className="modal-actions">
-              <button className="modal-btn-ghost" onClick={() => setIsSettingsOpen(false)}>Fechar</button>
-              <button className="modal-btn-primary" onClick={() => setIsSettingsOpen(false)}>Guardar</button>
+              <button className="modal-btn-ghost" onClick={() => setIsSettingsOpen(false)} disabled={isSavingSettings}>Fechar</button>
+              <button className="modal-btn-primary" onClick={handleSaveSettings} disabled={isSavingSettings}>
+                {isSavingSettings ? 'Guardando...' : 'Guardar'}
+              </button>
             </div>
           </div>
         </div>
       )}
 
       <KyaAssistant isOpen={isKyaOpen} onClose={() => setIsKyaOpen(false)} session={session} />
+
+      <ShoppingCart
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cartItems={cartItems}
+        onRemoveItem={handleRemoveFromCart}
+        onUpdateQuantity={handleUpdateQuantity}
+        marketId={selectedMarket?.id}
+        marketName={selectedMarket?.nome || 'Mercado'}
+        session={session}
+      />
     </div>
   );
 }

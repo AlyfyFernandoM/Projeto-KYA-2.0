@@ -232,10 +232,31 @@
   cursor: pointer;
 }
 
+.icon-btn {
+  position: relative;
+}
+
 .icon-btn:hover {
   background: var(--gray-100);
   border-color: var(--gray-300);
   color: var(--gray-900);
+}
+
+.cart-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--green-700);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--white);
 }
 
 .page-body {
